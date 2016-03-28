@@ -1,0 +1,18 @@
+insert into `Authors` (`name`) values ('Mindaugas Elvikis');
+insert into `Authors` (`name`) values ('Mantas Akramas');
+insert into `Authors` (`name`) values ('Eimantas Elvikis');
+insert into `Books` (`authorId`,`title`,`year`) values ('8','101 dalmantinas', '2016');
+insert into `Books` (`authorId`,`title`,`year`) values ('9','Pupa', '2014');
+insert into `Books` (`authorId`,`title`,`year`) values ('10','Vilko vaikai', '2015');
+select Books.BookId, Books.title, Books.year, Authors.* from Books inner join Authors on Authors.authorId=Books.authorId;
+update  `Books` set  `authorId` =  '9' where  `bookId` =11;
+select Authors.name, count(Books.bookId) as `Books count` from Authors left outer join Books on Authors.authorId=Books.authorId group by Authors.authorId;
+select Authors.name, count(Books.bookId) as `Books count` from Authors left outer join Books on Authors.authorId=Books.authorId group by Authors.authorId having `Books count` > 0;
+delete from Authors where authorId in (8, 9, 10);
+delete Books.* from Books left join Authors on Authors.authorId=Books.authorId where Books.authorId is null or not exists(select null from Authors where Authors.authorId = Books.authorId);
+alter table  `Books` ADD  `genre` text null default null;
+create table Book_authors (id int primary key auto_increment, bookId int, authorId int);
+insert into Book_authors (bookId, authorId) (select Books.bookId, Authors.authorId from Books inner join Authors on Authors.authorId=Books.authorId);
+alter table Books drop column AuthorId;
+select Books.title, group_concat(Authors.name separator ', ') as Authors from Books inner join Book_authors on Book_authors.bookId=Books.bookId inner join Authors on Authors.authorId=Book_authors.authorId group by Books.bookId;
+alter table Books convert to character set UTF8;
