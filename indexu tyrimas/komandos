@@ -1,0 +1,123 @@
+Selects:
+	
+	1:
+		
+		select SQL_NO_CACHE count(*) from JobsRegister left join JobsRegister_Services on 						JobsRegister_Services.jobsRegisterId=JobsRegister.jobsRegisterId left join Services on 			Services.serviceId=JobsRegister_Services.serviceId 	where Services.shortName='KKP';
+		
+		Result:
+
+			Without index:  2.65 sec
+			With index:	0.31 sec
+
+	2:
+
+		select SQL_NO_CACHE Materials.name, GROUP_CONCAT(Services.name)  FROM Materials     left join JobsRegister_Materials on 		Materials.materialId = JobsRegister_Materials.materialId     left join JobsRegister_Services on 				JobsRegister_Materials.jobsRegisterServiceId = JobsRegister_Services.jobsRegisterServiceId     left join 			Services on JobsRegister_Services.serviceId = Services.serviceId GROUP BY Materials.materialId ORDER BY Materials.name asc 			limit 30;
+	
+		Result:
+
+			Without index:  1 min 32.74 sec
+			With index:	9.32 sec
+
+	3:
+
+		select SQL_NO_CACHE count(*) from JobsRegister left join JobsRegister_Materials on 						JobsRegister_Materials.jobsRegisterId=JobsRegister.jobsRegisterId left join Materials on 			Materials.materialId=JobsRegister_Materials.materialId where Materials.name='Diporex';
+
+		Result:
+
+			Without index:  2.76 sec
+			With index:	0.40 sec
+
+Updates:
+
+	1:
+		
+		UPDATE JobsRegister SET matsCount =  (      SELECT COUNT(DISTINCT JobsRegister_Materials.materialId)      FROM 			JobsRegister_Materials     WHERE JobsRegister_Materials.jobsRegisterId = JobsRegister.jobsRegisterId  ) 
+		WHERE JobsRegister.jobsRegisterId < 30;
+		
+		Result:
+
+			Without index:  9.53 sec
+			With index:	16.95 sec
+
+	2:
+		
+		UPDATE JobsRegister SET matsSum = ( SELECT SUM(JobsRegister_Materials.count) FROM JobsRegister_Materials WHERE 			JobsRegister_Materials.jobsRegisterId = JobsRegister.jobsRegisterId ) WHERE JobsRegister.jobsRegisterId < 30;
+
+		
+		Result:
+
+			Without index:  9.66 sec
+			With index:	17.51 sec
+
+Deletes:
+
+	1:
+		
+		DELETE FROM JobsRegister WHERE JobsRegister.jobsRegisterId > 100 and JobsRegister.jobsRegisterId < 500000;
+		
+		Result:
+
+			Without index:  5.83 sec
+			With index:	7.21 sec
+
+	2:
+		
+		delete from JobsRegister where kkTechnicianArrivalDate < now();
+
+		
+		Result:
+
+			Without index:  0.24 sec
+			With index:	0.35 sec
+
+Inserts:
+
+	1:
+		1000
+		x
+		INSERT INTO `JobsRegister` (`jobsRegisterId`, `contractId`, `objectId`, `kkTechnicianArrivalDate`, 				`kkTechnicianDepartureDate`, `kkTechnicianId`, `arrivalDate`, `goal`, `type`) VALUES(1, 0, 0, '0000-00-00 00:00:00', 			'0000-00-00 00:00:00', 0, '0000-00-00', '', '');
+		
+		Result:
+
+			Without index:  1.942208 sec
+			With index:	2.015146 sec
+
+	2:
+		
+		INSERT INTO `JobsRegister` (`jobsRegisterId`, `contractId`, `objectId`, `kkTechnicianArrivalDate`, 				`kkTechnicianDepartureDate`, `kkTechnicianId`, `arrivalDate`, `goal`, `type`) VALUES
+		(1, 0, 0, '0000-00-00 00:00:00', '0000-00-00 00:00:00', 0, '0000-00-00', '', ''),
+		(2, 0, 0, '0000-00-00 00:00:00', '0000-00-00 00:00:00', 0, '0000-00-00', '', ''),
+		(3, 0, 0, '0000-00-00 00:00:00', '0000-00-00 00:00:00', 0, '0000-00-00', '', ''),
+		...,
+		(1000, 0, 0, '0000-00-00 00:00:00', '0000-00-00 00:00:00', 0, '0000-00-00', '', '');
+		
+		
+		Result:
+
+			Without index:  0.35442 sec
+			With index:	0.4125 sec
+
+	3:
+		
+		LOAD DATA INFILE '~/sql.csv'
+		    INTO TABLE JobsRegister
+		    FIELDS TERMINATED BY ','
+		    LINES TERMINATED BY '\n'
+		    (
+		    contractId,
+		    objectId,
+		    kkTechnicianArrivalDate,
+		    kkTechnicianDepartureDate,
+		    kkTechnicianId,
+		    arrivalDate,
+		    goal,
+		    type
+		);
+		
+		
+		Result:
+
+			Without index:  0.02 sec
+			With index:	0.032 sec
+
+	
